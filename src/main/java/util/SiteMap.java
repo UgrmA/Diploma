@@ -1,6 +1,7 @@
 package util;
 
-import data.DBConnection;
+import configuration.constants.AppPrm;
+import data.ProjectRepository;
 import lombok.SneakyThrows;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -14,42 +15,60 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveAction;
 
-import static configuration.Parameters.JSOUP_REFERRER;
-import static configuration.Parameters.JSOUP_USER_AGENT;
-
 public class SiteMap extends RecursiveAction {
     private static final Set<String> linksSeen = ConcurrentHashMap.newKeySet();
     private final String url;
     private final String child;
     private final List<Element> links;
+    private final AppPrm appPrm;
 
-    public SiteMap(String url, String child) throws IOException, SQLException {
+    public SiteMap(String url, String child, Boolean addLink)
+            throws IOException, SQLException {
         this.url = url;
         this.child = child;
+        if (addLink) {
+            linksSeen.add("");
+        }
+        appPrm = new AppPrm();
 
-        Connection connect = Jsoup.connect(url + child)
-                .userAgent(JSOUP_USER_AGENT)
-                .referrer(JSOUP_REFERRER)
+        Connection connect = Jsoup.connect(url +
+                child.substring(child.length() == 0 ? 0 : 1))
+                .userAgent(appPrm.getUserAgent())
+                .referrer(appPrm.getReferrer())
                 .ignoreHttpErrors(true);
 
-        Document document = connect.ignoreContentType(true).get();
-        links = document.select("a[href^=/]");
+        Document document = connect.get();
+        links = document.select("a[href]");
 
-            DBConnection.appendMultiInsert(
-                    child,
-                    connect.response().statusCode(),
-                    document.html());
+        ProjectRepository.appendMultiInsert(
+                child,
+                connect.response().statusCode(),
+                document.html());
     }
 
     @SneakyThrows
     protected void compute() {
 
         for (Element link : links) {
-            String ref = link.attr("href").toLowerCase();
-            if (!ref.matches(".*\\.(png|jpe?g|pptx?|docx?|xlsx?|pdf|zip|js|nc|fig|m).*") &&
-                    !ref.matches(".*\\?.*=.*") &&
+            String ref = link.attr("href")
+                    .toLowerCase()
+                    .replace(url, "/")
+                    .trim();
+
+            int index = ref.indexOf("#");
+            switch (index) {
+                case -1:
+                    break;
+                case 0:
+                    continue;
+                default:
+                    ref = ref.substring(0, --index);
+            }
+
+            if (!ref.matches(appPrm.getMatchContent()) &&
+                    !ref.matches(appPrm.getMatchParameters()) &&
                     linksSeen.add(ref)) {
-                new SiteMap(url, ref).invoke();
+                new SiteMap(url, ref, false).invoke();
 
                 System.out.println(child + "\t" + ref);
             }
