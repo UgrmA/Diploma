@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
 
-public class AppPrm {
+public class App {
     private static final String propertiesPath = Objects.requireNonNull(Thread.currentThread()
             .getContextClassLoader().getResource("app.properties")).getPath();
     private static final Properties properties = new Properties();
@@ -19,7 +19,7 @@ public class AppPrm {
 
     private static int MAX_ALLOWED_PACKET;
 
-    public AppPrm() throws IOException {
+    public App() throws IOException {
         properties.load(new FileInputStream(propertiesPath));
 
         dbUrl = properties.getProperty("datasource.url");

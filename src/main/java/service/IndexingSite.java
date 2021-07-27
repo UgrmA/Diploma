@@ -10,13 +10,13 @@ import java.util.concurrent.ForkJoinPool;
 public class IndexingSite {
 
     public IndexingSite(String url) throws SQLException, IOException {
-
-        ProjectRepository.createTable();
+        ProjectRepository repository = new ProjectRepository();
+        repository.createTable();
         ForkJoinPool pool = new ForkJoinPool();
         pool.invoke(new SiteMap(url, "", true));
 
-        ProjectRepository.execMultiInsert();
-        ProjectRepository.indexPath();
+        repository.execMultiInsert();
+        repository.indexPath();
 
     }
 }

@@ -1,6 +1,6 @@
 package util;
 
-import configuration.constants.AppPrm;
+import configuration.constants.App;
 import data.ProjectRepository;
 import lombok.SneakyThrows;
 import org.jsoup.Connection;
@@ -20,7 +20,8 @@ public class SiteMap extends RecursiveAction {
     private final String url;
     private final String child;
     private final List<Element> links;
-    private final AppPrm appPrm;
+    ProjectRepository repository = new ProjectRepository();
+    private final App app;
 
     public SiteMap(String url, String child, Boolean addLink)
             throws IOException, SQLException {
@@ -29,18 +30,18 @@ public class SiteMap extends RecursiveAction {
         if (addLink) {
             linksSeen.add("");
         }
-        appPrm = new AppPrm();
+        app = new App();
 
         Connection connect = Jsoup.connect(url +
                 child.substring(child.length() == 0 ? 0 : 1))
-                .userAgent(appPrm.getUserAgent())
-                .referrer(appPrm.getReferrer())
+                .userAgent(app.getUserAgent())
+                .referrer(app.getReferrer())
                 .ignoreHttpErrors(true);
 
-        Document document = connect.get();
+        Document document = connect.ignoreContentType(true).get();
         links = document.select("a[href]");
 
-        ProjectRepository.appendMultiInsert(
+        repository.appendMultiInsert(
                 child,
                 connect.response().statusCode(),
                 document.html());
@@ -65,12 +66,10 @@ public class SiteMap extends RecursiveAction {
                     ref = ref.substring(0, --index);
             }
 
-            if (!ref.matches(appPrm.getMatchContent()) &&
-                    !ref.matches(appPrm.getMatchParameters()) &&
+            if (!ref.matches(app.getMatchContent()) &&
+                    !ref.matches(app.getMatchParameters()) &&
                     linksSeen.add(ref)) {
                 new SiteMap(url, ref, false).invoke();
-
-                System.out.println(child + "\t" + ref);
             }
         }
         Thread.sleep((long) (500 + 4500 * Math.random()));
