@@ -27,9 +27,6 @@ public class SiteMap extends RecursiveAction {
             throws IOException, SQLException {
         this.url = url;
         this.child = child;
-        if (addLink) {
-            linksSeen.add("");
-        }
         app = new App();
 
         Connection connect = Jsoup.connect(url +

@@ -27,6 +27,7 @@ public class App {
         referrer = properties.getProperty("connection.referrer");
         matchContent = properties.getProperty("match.content");
         matchParameters = properties.getProperty("match.parameters");
+
         MAX_ALLOWED_PACKET = Integer.parseInt(properties.getProperty("max_allowed_packet"));
     }
 
