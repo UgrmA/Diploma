@@ -36,7 +36,6 @@ public class ProjectRepository {
     }
 
     public void execMultiInsert() throws SQLException {
-
         if (insertQuery.length() > 0) {
             try (Statement statement = connection.createStatement()) {
                 statement.execute(INSERT_INTO + insertQuery);
@@ -46,7 +45,6 @@ public class ProjectRepository {
 
     public void appendMultiInsert(String path, int code, String content)
             throws SQLException {
-
         insertQuery.append(insertQuery.length() == 0 ? "" : ", ")
                 .append("('").append(path)
                 .append("', ").append(code)

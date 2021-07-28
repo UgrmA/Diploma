@@ -23,7 +23,7 @@ public class SiteMap extends RecursiveAction {
     ProjectRepository repository = new ProjectRepository();
     private final App app;
 
-    public SiteMap(String url, String child, Boolean addLink)
+    public SiteMap(String url, String child)
             throws IOException, SQLException {
         this.url = url;
         this.child = child;
@@ -66,7 +66,7 @@ public class SiteMap extends RecursiveAction {
             if (!ref.matches(app.getMatchContent()) &&
                     !ref.matches(app.getMatchParameters()) &&
                     linksSeen.add(ref)) {
-                new SiteMap(url, ref, false).invoke();
+                new SiteMap(url, ref).invoke();
             }
         }
         Thread.sleep((long) (500 + 4500 * Math.random()));

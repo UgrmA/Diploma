@@ -14,7 +14,7 @@ public class IndexingSite {
         repository.createTable();
 
         ForkJoinPool pool = new ForkJoinPool();
-        pool.invoke(new SiteMap(url, "", true));
+        pool.invoke(new SiteMap(url, ""));
 
         repository.execMultiInsert();
         repository.indexPath();
